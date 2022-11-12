@@ -3,7 +3,7 @@
 Raspberry Pi Pico を用いた、COSMAC VIP のエミュレータ。
 以前から公開していた [VIP/Pico](https://github.com/AutomaticComputer/VIPonPico)に
 VP-590 Color Board 相当の機能を加え、
-カラーの NTSC ビデオ信号を出力するようにしました。
+カラーの NTSC ビデオ信号を出力するようにしました(「大体 NTSC」と言うべきかも)。
 追加部品は(ビデオ周りでは)抵抗のみです。
 
 現代において NTSC で出力する意味はあまり無いかもしれませんが、昔のマイコンな感じが出ているかと思います。
@@ -49,7 +49,7 @@ Raspberry Pi Pico の PIO(programmable I/O)を 1 つ(state machine を 4 つ)使
 規格では±10 Hz となっていますが、さすがに実際のテレビではそこまで厳密ではないようです。
 
 システムクロックとは別に 3.579545... MHz の水晶振動子を発振させるのが
-まともな方法だと思いますが、可能な限り追加回路を少なくしようということで、
+ちゃんとした方法だと思いますが、可能な限り追加回路を少なくしようということで、
 システムクロックを 128 MHz として、
 クロックを 17.8793651 分の一に分割して PIO を約 7.16 MHz で動かし、約 3.58 MHz の方形波を作っています。
 実際には clkdiv の小数部分は 1 バイトなので、clkdiv=17.87890625 になっており、
@@ -65,8 +65,8 @@ Raspberry Pi Pico の PIO(programmable I/O)を 1 つ(state machine を 4 つ)使
 もう 2 つの DC 信号(輝度)を on/off し、これらの出力を抵抗で組み合わせたものが
 最終的な信号となっています。
 
-色ずれがそこそこありますが、方形波というところに無理があるのか、
-あるいは別の理由があるのかは分かりません。
+色ずれがそこそこありますが、方形波ではこのへんが限界なのか、
+あるいはもう少し工夫の余地があるのか…
 また、色が少し波打つ感じがあるのは、
 色副搬送波の周波数が正確でないためだと推測しています。
 
@@ -80,10 +80,11 @@ Raspberry Pi Pico の PIO(programmable I/O)を 1 つ(state machine を 4 つ)使
 
 ## 謝辞
 
-カラーの NTSC ビデオ信号を生成する方法については、
-以下のページを参考にしました。
+カラーの NTSC ビデオ信号については、以下のようなページを参考にしました。
 
 ChaN さんの[RS-170A NTSCビデオ信号タイミング規格の概要](http://elm-chan.org/docs/rs170a/spec_j.html)
+
+nekosan さんの [ＣＰＬＤでコンポジットビデオ　”ネコ８”](http://picavr.uunyan.com/vhdl_composite.html)
 
 ケンケンさんの [PICマイコンによるカラーコンポジットビデオ出力実験](http://www.ze.em-net.ne.jp/~kenken/composite/index.html)
 
