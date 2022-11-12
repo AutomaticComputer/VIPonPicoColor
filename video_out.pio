@@ -1,0 +1,25 @@
+.program video_out
+
+public color_carrier_start:
+.wrap_target
+set pins, 0
+set pins, 1
+.wrap
+
+public video_sig_start: 
+nop[17]
+set pindirs, 4[8]
+set pindirs, 0[10]
+out pindirs, 5[16]
+set x, 15
+l0:
+out pindirs, 5[1]
+out pindirs, 5[1]
+out pindirs, 5[1]
+out pindirs, 5
+jmp x--, l0
+out pindirs, 5[20]
+set pindirs, 0
+public video_sig_standby:
+jmp video_sig_standby
+

@@ -1,0 +1,25 @@
+引っかかった(はまった)ところ等のメモ。
+
+* PIO: out と set のピンは別々に設定。(side-set も。)
+pio_sm_set_out_pins, pio_sm_set_set_pins 等。
+
+* PIO で(出力に)使うピンには pio_gpio_init と
+gpio_set_function のどちらかを呼ぶ。
+
+pio_gpio_init は pio, pin のチェックをして gpio_set_function を
+GPIO_FUNC_PIO0 または GPIO_FUNC_PIO1 で呼ぶ。
+gpio_set_function は FUNCSEL に書き込む以外に、
+input enable on, output disable off, 
+input/output/irq override bits の clear も行う。
+(iobank0_hw->io[pin].ctrl = GPIO_FUNC_.... もあり)
+
+* flash に書き込むときは、irq を disable, 
+他の core を lockout する(RAM から実行、irq を disable)。
+
+* RP2040 Datasheet, 2.1.4. Narrow IO Register Writes
+IOレジスタに、たとえばバイト書き込みすると、4バイト繰り返しで書き込まれる。
+(xy -> xyxyxyxy)
+Cortex-M0+ の仕様で、RP2040 の DMA でも同じ、らしい。
+
+* PLL では refdiv が 1 または 2 に設定できるはずだが、
+C/C++ SDK では refdiv=1 固定らしい(set_sys_clock_khz 等)。
