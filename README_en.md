@@ -1,58 +1,57 @@
 # VIP/Pico with Color
 
-[English](README_en.md)
+An emulator of COSMAC VIP on Raspberry Pi Pico. 
+To [VIP/Pico](https://github.com/AutomaticComputer/VIPonPico), which I developed earlier, 
+I added the functionality of VP-590 Color Board, 
+so that it outputs NTSC(-ish) color signal. 
+The only additional parts (concerning the video) are resistors. 
 
-Raspberry Pi Pico を用いた、COSMAC VIP のエミュレータ。
-以前から公開していた [VIP/Pico](https://github.com/AutomaticComputer/VIPonPico)に
-VP-590 Color Board 相当の機能を加え、
-カラーの NTSC ビデオ信号を出力するようにしました(「大体 NTSC」と言うべきかも)。
-追加部品は(ビデオ周りでは)抵抗のみです。
-
-現代において NTSC で出力する意味はあまり無いかもしれませんが、昔のマイコンな感じが出ているかと思います。
-だからといって、RF モジュレータを通すことまでは考えていませんが。
-(世の中には、モノクロですが[電波までマイコンで生成している](https://hackaday.com/2015/02/26/attiny85-does-over-the-air-ntsc/)
-人もいますね…)
+Maybe it is not of much use to output NTSC, 
+but it feels like an early microcomputer. 
 
 ![RoundUp](doc/roundup_color.jpg)
 
 ![RoundUp](doc/roundup_color_78750.jpg)
 
+There are 2 executable files to choose from(see "Generating the color signal"): 
 
-実行可能ファイルは 2 種類あります(「カラー信号の発生について」参照)。
+- [128MHz version](build/pico_vip.uf2). 
+This gives a relatively natural image(the photo above), though there will be some color bleeding. 
+The background feels somewhat unstable. 
+Some TVs may fail to recognize the color signal. 
+- [78.75MHz version](build/pico_vip_78750.uf2). 
+This gives a sharper image, but also some stripes and ghost(?) (the photo below). 
+I think this is closer to the real VIP + VP-590. 
 
-- [128MHz版](build/pico_vip.uf2). 
-少しにじみますが、割合自然な映像になります(上の写真)。
-背景が少し不安定な気もします。
-TV によってはカラーが出ない可能性もあるかもしれません。
-- [78.75MHz版](build/pico_vip_78750.uf2). 
-比較的鮮明な画像になりますが、一部縞模様やゴースト(?)が出ます(下の写真)。
-実際の VIP + VP-590 に近いと思います。
 
-導入法、操作法等についてはこちらを。
+See the page on the BW version for how to use it. 
 
 [VIP/Pico](https://github.com/AutomaticComputer/VIPonPico)
 
-[COSMAC VIP 上のソフトウェア](doc/software.md)
+[Software on COSMAC VIP](doc/software.md)
 
 
-## 言い訳
+## Disclaimers
 
-カラー版も、いろいろ怪しいところがあります。
-特に、ハードウェア部分に関しては、接続先を壊さないとは限りません。
-(詳しくはVIP/Pico の README.md をご覧ください。)
-
-
-## ハードウェア
-
-![回路図](doc/vip_pico_color_schematic.png)
-
-VIP/Pico に比べると、抵抗が 5 本増えています。
+As with the BW version, this is not a stable release. 
+It might break the peripherals. 
+(See README.md of VIP/Pico for details.)
 
 
-## カラー信号の発生について
+## Hardware
 
-Raspberry Pi Pico の PIO(programmable I/O)を 1 つ(state machine を 4 つ)使い、
-またCPUのエミュレーションに主に core 0, ビデオ出力に主に core 1 を使っています。
+![Schematic](doc/vip_pico_color_schematic.png)
+
+You need five more resistors than with VIP/Pico. 
+
+
+## Generating the color signal
+
+Four state machines of one PIO(programmable I/O) is used. 
+Core 0 is mainly used for the emulation of the CPU, 
+core 1 for video output. 
+
+Not yet translated...
 
 ビデオ信号のうち V-SYNC, H-SYNC については、
 [Sagar さんの記事](https://sagargv.blogspot.com/2014/07/ntsc-demystified-color-demo-with.html)
@@ -89,15 +88,16 @@ PIO の 3 つの state machine を、少し時間を空けて開始する(clkdiv
 最終的な信号となっています。
 
 
-## 謝辞
 
-カラーの NTSC ビデオ信号については、以下のようなページを参考にしました。
+## Acknowledgements
 
-ChaN さんの[RS-170A NTSCビデオ信号タイミング規格の概要](http://elm-chan.org/docs/rs170a/spec_j.html)
+I referred to the following pages for the color NTSC video signal. 
 
-nekosan さんの [ＣＰＬＤでコンポジットビデオ　”ネコ８”](http://picavr.uunyan.com/vhdl_composite.html)
+ChaN さん [RS-170A NTSCビデオ信号タイミング規格の概要](http://elm-chan.org/docs/rs170a/spec_j.html)
 
-ケンケンさんの [PICマイコンによるカラーコンポジットビデオ出力実験](http://www.ze.em-net.ne.jp/~kenken/composite/index.html)
+nekosan さん [ＣＰＬＤでコンポジットビデオ　”ネコ８”](http://picavr.uunyan.com/vhdl_composite.html)
 
-Sagar さんの [All Digital NTSC Color](https://www.sagargv.com/proj/ntsc/), 
+ケンケンさん [PICマイコンによるカラーコンポジットビデオ出力実験](http://www.ze.em-net.ne.jp/~kenken/composite/index.html)
+
+Sagar さん [All Digital NTSC Color](https://www.sagargv.com/proj/ntsc/), 
 [https://sagargv.blogspot.com/2014/07/ntsc-demystified-color-demo-with.html](https://sagargv.blogspot.com/2014/07/ntsc-demystified-color-demo-with.html)

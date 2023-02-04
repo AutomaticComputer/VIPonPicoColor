@@ -12,8 +12,10 @@ void set_tone(uint16_t);
 extern uint sys_timer_slice, csync_timer_slice, video_dma_timer_slice, beep_timer_slice, 
     beep_timer_channel;
 
-#define RAM_SIZE 0x1000
-#define RAM_ADDRESS_MASK 0x0FFF
+// #define RAM_SIZE 0x1000
+// #define RAM_ADDRESS_MASK 0x0FFF
+#define RAM_SIZE 0x8000
+#define RAM_ADDRESS_MASK 0x7FFF
 
 #define CLOCKS_PER_CYCLE 8
 #define CYCLES_PER_LINE 14
@@ -32,10 +34,13 @@ extern uint sys_timer_slice, csync_timer_slice, video_dma_timer_slice, beep_time
 // SP: for Signal period
 #define SP_PRESCALE SYNC_PRESCALE
 #define SP_SIZE 128
-#define SP_DMA_START (3 * CLOCKS_PER_CYCLE)
-#define SP_DMA_MEMCPY (4 * CLOCKS_PER_CYCLE)
-#define SP_SPI_START (5 * CLOCKS_PER_CYCLE)
-#define SP_DMA_END (11 * CLOCKS_PER_CYCLE)
+
+// differ from BW version by 1 machine cycle
+#define SP_DMA_START (2 * CLOCKS_PER_CYCLE)
+#define SP_DMA_MEMCPY (3 * CLOCKS_PER_CYCLE)
+#define SP_SPI_START (4 * CLOCKS_PER_CYCLE)
+#define SP_DMA_END (10 * CLOCKS_PER_CYCLE)
+
 #define SP_HOR SYNC_HOR
 #define SP_TOP (SP_HOR - 1)
 #define SP_INITIAL (SP_HOR * 79 + SP_DMA_START + SYNC_TOP)

@@ -96,10 +96,18 @@ void restart_color_sm();
 int clock_1802_div;
 
 void init_devices() {
-    int main_clock = 128000;
-    float subcarrier_div = main_clock/7159.090909;
-    clock_1802_div = floor(main_clock/3521.28 + 0.5)*2;
+    int main_clock;
+    float subcarrier_div;
+#ifdef CLOCK_78750
+    main_clock = 78750;
+    subcarrier_div = 11;
+    clock_1802_div = 44;
+#else
+    main_clock = 128000;
 //  other suggestions: 115000, 120000, 128000, 131000 ...
+    subcarrier_div = main_clock/7159.090909;
+    clock_1802_div = floor(main_clock/3521.28 + 0.5)*2;
+#endif
 
     set_sys_clock_khz(main_clock, true);
 
@@ -220,6 +228,13 @@ void __not_in_flash_func(restart_color_sm)() {
     );
     pio_sm_clkdiv_restart(color_pio, color_sm1);
     pio_sm_exec(color_pio, color_sm1, pio_encode_jmp(video_out_offset_color_carrier_start));
+#ifdef CLOCK_78750
+    asm volatile(
+	    "mov  r0, #6\n"    		// 1 cycle
+	    "loop1: sub  r0, r0, #1\n"	// 1 cycle
+	    "bne   loop1\n"          	// 2 cycles if loop taken, 1 if not
+    );
+#else
     asm volatile(
 	    "mov  r0, #8\n"    		// 1 cycle
 	    "loop1: sub  r0, r0, #1\n"	// 1 cycle
@@ -227,6 +242,7 @@ void __not_in_flash_func(restart_color_sm)() {
         "nop\n"
         "nop\n"
     );
+#endif
     pio_sm_clkdiv_restart(color_pio, color_sm2);
     pio_sm_exec(color_pio, color_sm2, pio_encode_jmp(video_out_offset_color_carrier_start));
 }
@@ -274,39 +290,32 @@ void __not_in_flash_func(pwm_irq_handler)() {
         color_ram_count = 0;
     }
 
+    while(pwm_get_counter(csync_timer_slice) < 16)   // wait for the instruction before DMA to finish
+        if (!video_on) 
+            return;  // in case the display is stopped 
+
     uint32_t bg_data, fg_data;
-    bg_data = bg_to_data[color_bg];
-
-
-    pio_sm_put_blocking(color_pio, color_sm3, bg_data);
     if (sync_line_count < 80 || sync_line_count >= 208) {
+        bg_data = bg_to_data[color_bg];
+        pio_sm_put_blocking(color_pio, color_sm3, bg_data);
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
                 pio_sm_put_blocking(color_pio, color_sm3, bg_data);
             }
         }
         pio_sm_put_blocking(color_pio, color_sm3, bg_data);
+        // strictly speaking, bg might change during a horizontal line.
         return;
     }
 
-
-    asm volatile(
-	    "mov  r0, #255\n"    		// 1 cycle
-	    "loop_a: sub  r0, r0, #1\n"	// 1 cycle
-	    "bne   loop_a\n"          	// 2 cycles if loop taken, 1 if not
-	    "nop\n"    		// 1 cycle
-    );
-    asm volatile(
-	    "mov  r0, #255\n"    		// 1 cycle
-	    "loop_b: sub  r0, r0, #1\n"	// 1 cycle
-    	"bne   loop_b\n"          	// 2 cycles if loop taken, 1 if not
-	    "nop\n"    		// 1 cycle
-    );
 
     uint16_t x = registers[0];
     uint16_t addr = (modify_msb || (x & 0x8000)) ? ((x & 0x01FF) | 0x8000) : (x & RAM_ADDRESS_MASK);
 
     uint8_t c, col;
+
+    bg_data = bg_to_data[color_bg]; // this timing should be mostly ok
+    pio_sm_put_blocking(color_pio, color_sm3, bg_data);
 
     for(int i = 0; i < 8; i++) {
         c = memory[addr++];
@@ -487,7 +496,6 @@ void __not_in_flash_func(stop_display)() {
     iobank0_hw->io[VIDEO_G_GPIO].ctrl = GPIO_FUNC_NULL;
     iobank0_hw->io[VIDEO_DC0_GPIO].ctrl = GPIO_FUNC_NULL;
     iobank0_hw->io[VIDEO_DC1_GPIO].ctrl = GPIO_FUNC_NULL;
-
 }
 
 void reset_bg_color() {

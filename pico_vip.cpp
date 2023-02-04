@@ -11,7 +11,6 @@
 #include "data.h"
 #include "devices.h"
 
-
 #define CYCLE_COUNT_DEF 
 // #define CYCLE_COUNT_DEF int machine_cycles = 0;  // for debugging
 #define CYCLE_COUNT_INIT
@@ -983,11 +982,17 @@ CYCLE_COUNT_ADD
     }
 }
 
+
 void download_data() {
     int c, bytes, sector, base;
     uint8_t buf[4096];
 
+// USB serial doesn't work at 78750 kHz?
+    set_sys_clock_khz(128000, true);
+    sleep_ms(50);
+
     multicore_reset_core1();
+
     stdio_init_all();
 
     while(1) {
